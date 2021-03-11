@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="Magento\Paypal\Controller\Express\GetToken" type="OpenTechiz\PaypalCustomizer\Controller\Express\GetToken"/>
+    <preference for="Magento\Paypal\Controller\Express\Start" type="OpenTechiz\PaypalCustomizer\Controller\Express\Start"/>
+    <preference for="Magento\Paypal\Model\Express\Checkout" type="OpenTechiz\PaypalCustomizer\Model\Express\Checkout"/>
+</config>
