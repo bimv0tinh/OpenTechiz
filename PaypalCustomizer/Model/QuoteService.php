@@ -13,17 +13,6 @@ use Magento\Sales\Model\Order;
  */
 class QuoteService extends \Magento\Quote\Model\QuoteManagement
 {
-
-    /**
-     * @var \Magento\Customer\Api\AddressRepositoryInterface
-     */
-    private $addressRepository;
-
-    /**
-     * @var array
-     */
-    private $addressesToSync = [];
-
     /**
      * @param Quote $quote
      * @param bool $place
@@ -94,13 +83,13 @@ class QuoteService extends \Magento\Quote\Model\QuoteManagement
         }
         if ($quote->isVirtual()) {
             $this->dataObjectHelper->mergeDataObjects(
-                \Magento\Sales\Api\Data\OrderInterface::class,
+                '\Magento\Sales\Api\Data\OrderInterface',
                 $order,
                 $this->quoteAddressToOrder->convert($quote->getBillingAddress(), $orderData)
             );
         } else {
             $this->dataObjectHelper->mergeDataObjects(
-                \Magento\Sales\Api\Data\OrderInterface::class,
+                '\Magento\Sales\Api\Data\OrderInterface',
                 $order,
                 $this->quoteAddressToOrder->convert($quote->getShippingAddress(), $orderData)
             );
@@ -127,12 +116,13 @@ class QuoteService extends \Magento\Quote\Model\QuoteManagement
         $addresses[] = $billingAddress;
         $order->setBillingAddress($billingAddress);
         $order->setAddresses($addresses);
+        $orderPayment = $order->getPayment();
 
         $payment = $this->quotePaymentToOrderPayment->convert($quote->getPayment());
-        if ($order->getPayment() && $order->getPayment()->getId()) {
-            $payment->setId($order->getPayment()->getId());
-        }
         $order->setPayment($payment);
+        if ($orderPayment && $orderPayment->getId()) {
+            $payment->setId($orderPayment->getId());
+        }
         $orderItems = [];
         foreach ($this->resolveItems($quote) as $orderItem) {
             /** @var \Magento\Sales\Model\Order\Item $orderItem */
@@ -165,7 +155,6 @@ class QuoteService extends \Magento\Quote\Model\QuoteManagement
             $this->getOrderRepository()->save($order);
             $this->quoteRepository->save($quote);
         } catch (\Exception $e) {
-            $this->rollbackAddresses($quote, $order, $e);
             throw $e;
         }
     }
@@ -197,47 +186,15 @@ class QuoteService extends \Magento\Quote\Model\QuoteManagement
             );
             $this->quoteRepository->save($quote);
         } catch (\Exception $e) {
-            $this->rollbackAddresses($quote, $order, $e);
-            throw $e;
-        }
-    }
-
-    /**
-     * Remove related to order and quote addresses and submit exception to further processing.
-     *
-     * @param Quote $quote
-     * @param \Magento\Sales\Api\Data\OrderInterface $order
-     * @param \Exception $e
-     * @throws \Exception
-     * @return void
-     */
-    private function rollbackAddresses(
-        QuoteEntity $quote,
-        \Magento\Sales\Api\Data\OrderInterface $order,
-        \Exception $e
-    ) {
-        try {
-            if (!empty($this->addressesToSync)) {
-                foreach ($this->addressesToSync as $addressId) {
-                    $this->addressRepository->deleteById($addressId);
-                }
-            }
             $this->eventManager->dispatch(
                 'sales_model_service_quote_submit_failure',
                 [
-                    'order' => $order,
-                    'quote' => $quote,
-                    'exception' => $e,
+                    'order'     => $order,
+                    'quote'     => $quote,
+                    'exception' => $e
                 ]
             );
-            // phpcs:ignore Magento2.Exceptions.ThrowCatch
-        } catch (\Exception $consecutiveException) {
-            $message = sprintf(
-                "An exception occurred on 'sales_model_service_quote_submit_failure' event: %s",
-                $consecutiveException->getMessage()
-            );
-            // phpcs:ignore Magento2.Exceptions.DirectThrow
-            throw new \Exception($message, 0, $e);
+            throw $e;
         }
     }
 
