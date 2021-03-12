@@ -13,10 +13,6 @@ use Magento\Sales\Model\Order;
  */
 class QuoteService extends \Magento\Quote\Model\QuoteManagement
 {
-    /**
-     * @var \Magento\Quote\Model\QuoteIdMaskFactory
-     */
-    private $quoteIdMaskFactory;
 
     /**
      * @var \Magento\Customer\Api\AddressRepositoryInterface
@@ -85,11 +81,10 @@ class QuoteService extends \Magento\Quote\Model\QuoteManagement
      */
     protected function _submitQuoteOrder(QuoteEntity $quote, $order, $orderData = [])
     {
-        $this->submitQuoteValidator->validateQuote($quote);
+        $this->quoteValidator->validateBeforeSubmit($quote);
         if (!$quote->getCustomerIsGuest()) {
             if ($quote->getCustomerId()) {
                 $this->_prepareCustomerQuote($quote);
-                $this->customerManagement->validateAddresses($quote);
             }
             $this->customerManagement->populateCustomerInfo($quote);
         }
@@ -156,7 +151,6 @@ class QuoteService extends \Magento\Quote\Model\QuoteManagement
         $order->setCustomerFirstname($quote->getCustomerFirstname());
         $order->setCustomerMiddlename($quote->getCustomerMiddlename());
         $order->setCustomerLastname($quote->getCustomerLastname());
-        $this->submitQuoteValidator->validateOrder($order);
         return $order;
     }
 
