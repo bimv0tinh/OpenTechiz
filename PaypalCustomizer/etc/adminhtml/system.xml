@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2013-2017 Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="payment">
+            <group id="recommended_solutions">
+                <group id="paypal_express_customizer" translate="label" sortOrder="100" showInDefault="1" showInWebsite="1">
+                    <label>Paypal Express Customizer Configure</label>
+                    <field id="create_order_before" translate="label" type="select" sortOrder="95" showInDefault="1" showInWebsite="1">
+                        <label>Create Order Pending Before Payment</label>
+                        <config_path>payment/paypal_express/create_order_before</config_path>
+                        <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                        <comment>Allow create order before customer payment with paypal express. This apply with Skip Order Review Step.</comment>
+                    </field>
+                </group>
+            </group>
+        </section>
+    </system>
+</config>

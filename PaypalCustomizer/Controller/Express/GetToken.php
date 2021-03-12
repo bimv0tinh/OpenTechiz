@@ -33,7 +33,7 @@ class GetToken extends \Magento\Paypal\Controller\Express\GetToken
                     ->unsLastOrderId()
                     ->unsLastRealOrderId();
             }
-            if ($this->_checkout->canSkipOrderReviewStep()) {
+            if ($this->_checkout->allowCreateOrderBeforePay()) {
                 $this->_checkout->createOrder();
             }
         }

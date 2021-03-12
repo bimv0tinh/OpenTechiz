@@ -64,6 +64,10 @@ class Checkout extends \Magento\Paypal\Model\Express\Checkout
      */
     public function place($token, $shippingMethodCode = null)
     {
+        if (!$this->allowCreateOrderBeforePay()) {
+            parent::place($token, $shippingMethodCode);
+            return;
+        }
         if ($shippingMethodCode) {
             $this->updateShippingMethod($shippingMethodCode);
         }
@@ -128,5 +132,13 @@ class Checkout extends \Magento\Paypal\Model\Express\Checkout
                 $this->_quote->getBillingAddress()->setSameAsBilling(1);
             }
         }
+    }
+
+    /**
+     * @return bool
+     */
+    public function allowCreateOrderBeforePay()
+    {
+        return (bool)($this->canSkipOrderReviewStep() && $this->_storeManager->getStore()->getConfig("payment/paypal_express/create_order_before"));
     }
 }
